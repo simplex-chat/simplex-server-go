@@ -1,0 +1,48 @@
+{
+  "name": "simplex messaging server",
+  "description": "Server implementing simplex messaging protocol in Go",
+  "keywords": [
+    "messaging",
+    "privacy"
+  ],
+  "website": "https://github.com/simplex-chat/simplex-server-go",
+  "repository": "https://github.com/simplex-chat/simplex-server-go",
+  "logo": "https://avatars1.githubusercontent.com/u/59927747?s=200&v=4",
+  "success_url": "https://github.com/simplex-chat/simplex-server-go",
+  "scripts": {
+    "postdeploy": "echo deployed"
+  },
+  "env": {
+    "CONNECTION_ENDPOINT": {
+      "description": "path to create connection",
+      "value": "/connection"
+    },
+    "PAGE_SIZE": {
+      "description": "the maximum number of retrieved messages",
+      "value": "100"
+    },
+    "LARGE_MESSAGE": {
+      "description": "the maximum message size that is retrived by multi-message endpoint (bytes)",
+      "value": "16384"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/go"
+    }
+  ],
+  "addons": [
+    {
+      "plan": "heroku-postgresql:hobby-dev",
+      "options": {
+        "version": "11"
+      }
+    }
+  ],
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "free"
+    }
+  }
+}
