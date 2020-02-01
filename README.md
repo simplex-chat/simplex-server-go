@@ -25,3 +25,27 @@ Run migrations locally:
 ```bash
 migrate -path=migrations -database postgres://localhost:5432/postgres?sslmode=disable up
 ```
+
+
+### Running server
+
+```bash
+PORT=8080 simplex-server
+```
+
+
+### Running tests
+
+To run the tests, the server should be running.
+
+If server runs on `localhost:8080`:
+
+```bash
+go test
+```
+
+If server runs on another URI:
+
+```bash
+go test -server=http://example.com
+```
