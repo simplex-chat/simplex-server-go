@@ -20,7 +20,8 @@ CREATE TABLE messages (
     REFERENCES connections
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
-  id uuid NOT NULL UNIQUE,
+  id uuid NOT NULL,
   ts timestamp NOT NULL,
-  msg bytea NOT NULL
+  msg bytea NOT NULL,
+  PRIMARY KEY (recipient_uri, id)
 );
