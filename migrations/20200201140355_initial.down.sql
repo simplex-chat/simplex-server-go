@@ -1,3 +1,1 @@
-DROP TABLE messages;
-DROP TABLE connections;
-DROP TABLE uris;
+DROP SCHEMA IF EXISTS server_schema CASCADE;
