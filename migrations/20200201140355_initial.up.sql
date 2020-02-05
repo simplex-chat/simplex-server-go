@@ -2,6 +2,9 @@ CREATE TABLE uris (
   uri text PRIMARY KEY
 );
 
+/* here and further "ON <operation> RESTRICT" options make foreign key checks non deferrable,
+ * so that one cannot change data even if application stack is hypothetically compromised
+ */
 CREATE TABLE connections (
   recipient_uri text PRIMARY KEY
     REFERENCES uris (uri)
