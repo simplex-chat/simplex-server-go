@@ -1,0 +1,19 @@
+{
+  "request": {
+    "body": {
+      "properties": {
+        "recipient": {
+          "type": "string"
+        }
+      }  
+    }
+  },
+  "response": {
+    "body": {
+      "properties": {
+        "recipientURI": {"type": "string"},
+        "senderURI":  {"type": "string"}
+      }
+    }
+  }
+}

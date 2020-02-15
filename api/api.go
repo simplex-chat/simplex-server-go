@@ -11,16 +11,21 @@ func hello(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	fmt.Fprint(w, "Hello World\n")
 }
 
-type apiHandler = func(http.ResponseWriter, *http.Request, httprouter.Params)
-
 func todo(endpointName string) apiHandler {
 	return func(w http.ResponseWriter, _ *http.Request, _ httprouter.Params) {
 		fmt.Fprint(w, endpointName+" not implemented\n")
 	}
 }
 
+func createConnection(ctx Context) {
+	// result := db.CreateConnection()
+	// log.Println(result)
+
+	fmt.Fprint(ctx.Resp, "Ok")
+}
+
 func recipientApi(path string, router *httprouter.Router) {
-	router.POST(path, todo("createConnection"))
+	router.POST(path, handler("createConnection", createConnection))
 	router.PUT(path+"/:connection", todo("secureConnection"))
 	router.DELETE(path+"/:connection", todo("deleteConnection"))
 	router.GET(path+"/:connection/messages", todo("getMessages"))
