@@ -2,6 +2,9 @@ CREATE TABLE ids (
   id text PRIMARY KEY
 );
 
+/* here and further "ON <operation> RESTRICT" referential actions make foreign key checks non deferrable,
+ * so that one cannot change data even if server database credentials are compromised
+ */
 CREATE TABLE connections (
   recipient_id text PRIMARY KEY
     REFERENCES ids (id)
@@ -17,7 +20,7 @@ CREATE TABLE connections (
 
 CREATE TABLE messages (
   recipient_id text NOT NULL
-    REFERENCES connections
+    REFERENCES connections (recipient_id)
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
   id uuid NOT NULL,
