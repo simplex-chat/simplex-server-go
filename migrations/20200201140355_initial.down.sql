@@ -1,3 +1,3 @@
 DROP TABLE messages;
 DROP TABLE connections;
-DROP TABLE uris;
+DROP TABLE ids;
