@@ -10,7 +10,7 @@ import (
 	"github.com/qri-io/jsonschema"
 )
 
-type Context struct {
+type ApiContext struct {
 	Req    *http.Request
 	Params httprouter.Params
 	Body   map[string]interface{}
@@ -27,8 +27,8 @@ func marshal(obj interface{}) []byte {
 	return bytes
 }
 
-func handler(name string, handler func(Context)) apiHandler {
-	resSchema := getResourceSchema(name)
+func handler(schemaName string, handler func(ApiContext)) apiHandler {
+	resSchema := getResourceSchema(schemaName)
 	schema := jsonschema.RootSchema{}
 	schema.UnmarshalJSON(marshal(resSchema["request"]["body"]))
 
@@ -52,8 +52,6 @@ func handler(name string, handler func(Context)) apiHandler {
 			return
 		}
 
-		log.Println(body["recipient"])
-
-		handler(Context{Resp: w, Req: req, Params: params, Body: body})
+		handler(ApiContext{Resp: w, Req: req, Params: params, Body: body})
 	}
 }

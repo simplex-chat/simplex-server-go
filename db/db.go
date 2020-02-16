@@ -4,45 +4,68 @@ import (
 	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	_ "github.com/lib/pq"
 )
 
-func CreateConnection() sql.Result {
+var pool *sql.DB
+
+type NewSimplex struct {
+	Recipient_id  string
+	Sender_id     string
+	Recipient_key []byte
+}
+
+func Open() {
 	connStr := "postgres://localhost:5432/postgres?sslmode=disable"
-	log.Println("here 0")
-	db, err := sql.Open("postgres", connStr)
-	if err != nil {
+	var err error
+	if pool, err = sql.Open("postgres", connStr); err != nil {
 		log.Fatal(err)
 	}
-	log.Println("here 1")
+	pool.SetConnMaxLifetime(0)
+	pool.SetMaxIdleConns(5)
+	pool.SetMaxOpenConns(5)
 
-	// c := 10
-	// b := make([]byte, c)
-	// _, err := rand.Read(b)
-	// rand.Read()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
-	recipient_uri := "123"
-	sender_uri := "456"
-	recipient_key := []byte("abc")
-	sender_key := []byte("def")
+	if err := Ping(ctx); err != nil {
+		log.Fatal(err)
+	}
+}
 
-	var ctx context.Context
-	tx, err := db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+func Close() {
+	pool.Close()
+}
+
+func Ping(ctx context.Context) error {
+	ctx, cancel := context.WithTimeout(ctx, 1*time.Second)
+	defer cancel()
+	return pool.PingContext(ctx)
+}
+
+func CreateConnection(ctx context.Context, simplex NewSimplex) sql.Result {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
+	defer cancel()
+
+	conn, err := pool.Conn(ctx)
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+	defer conn.Close()
+	tx, err := conn.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		log.Println(err)
 	}
-	tx.Exec(`INSERT INTO uris (uri) VALUES (?)`, recipient_uri)
-	tx.Exec(`INSERT INTO uris (uri) VALUES (?)`, sender_uri)
-	result, _ := tx.Exec(`INSERT INTO connections
-		(recipient_uri, sender_uri, recipient_key, sender_key)
-		VALUES (?, ?, ?, ?);`,
-		recipient_uri, sender_uri, recipient_key, sender_key)
+	conn.ExecContext(ctx, `INSERT INTO ids (id) VALUES ($1)`, simplex.Recipient_id)
+	conn.ExecContext(ctx, `INSERT INTO ids (id) VALUES ($1)`, simplex.Sender_id)
+	result, err := conn.ExecContext(ctx, `INSERT INTO connections
+		(recipient_id, sender_id, recipient_key) VALUES ($1, $2, $3);`,
+		simplex.Recipient_id, simplex.Sender_id, simplex.Recipient_key)
 
 	tx.Commit()
-
-	log.Println("here 2")
-	log.Println(err)
 
 	return result
 }

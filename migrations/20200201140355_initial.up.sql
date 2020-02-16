@@ -1,14 +1,14 @@
-CREATE TABLE uris (
-  uri text PRIMARY KEY
+CREATE TABLE ids (
+  id text PRIMARY KEY
 );
 
 CREATE TABLE connections (
-  recipient_uri text PRIMARY KEY
-    REFERENCES uris (uri)
+  recipient_id text PRIMARY KEY
+    REFERENCES ids (id)
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
-  sender_uri text NOT NULL
-    REFERENCES uris (uri)
+  sender_id text NOT NULL
+    REFERENCES ids (id)
     ON DELETE RESTRICT
     ON UPDATE RESTRICT,
   recipient_key bytea NOT NULL,
@@ -16,12 +16,12 @@ CREATE TABLE connections (
 );
 
 CREATE TABLE messages (
-  recipient_uri text NOT NULL
+  recipient_id text NOT NULL
     REFERENCES connections
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
   id uuid NOT NULL,
   ts timestamp NOT NULL,
   msg bytea NOT NULL,
-  PRIMARY KEY (recipient_uri, id)
+  PRIMARY KEY (recipient_id, id)
 );

@@ -53,27 +53,18 @@ func testApi(t *testing.T, req *http.Request, expectedStatus int, expectedBody s
 	}
 }
 
-// TestHello tests "Hello World"
-func TestHello(t *testing.T) {
-	testApi(t, req("GET", ""), 200, "Hello World\n")
-}
-
 // TestCreateConnection
 func TestCreateConnection(t *testing.T) {
-	testApi(t, req("POST", "/connection", `{"recipient": "123"}`),
+	testApi(t, req("POST", "/connection", `{"recipient": "AuK0uiwbmDZHm1ziYhM4OQ=="}`),
 		200, "Ok")
-	testApi(t, req("POST", "/connection", `1`),
-		400, "Bad Request")
-	testApi(t, req("POST", "/connection", `"recipient"`),
-		400, "Bad Request")
-	testApi(t, req("POST", "/connection", `[]`),
-		400, "Bad Request")
-	testApi(t, req("POST", "/connection", `{}`),
-		400, "Bad Request")
-	testApi(t, req("POST", "/connection", `{"recipient": 1}`),
-		400, "Bad Request")
-	testApi(t, req("POST", "/connection", `{"recipient": "123", "unknown": "123"}`),
-		400, "Bad Request")
+	invalidBody := []string{
+		`{"recipient": 1}`,
+		`{"recipient": "abc"}`,
+		`{"recipient": "AuK0uiwbmDZHm1ziYhM4OQ==", "unknown": "123"}`,
+		`1`, `"recipient"`, `[]`, `{}`, `false`, `null`}
+	for i := range invalidBody {
+		testApi(t, req("POST", "/connection", invalidBody[i]), 400, "Bad Request")
+	}
 }
 
 // TestRecipientApi tests recipient REST API
