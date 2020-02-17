@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 )
 
@@ -24,54 +25,64 @@ func catchError(t *testing.T) {
 	}
 }
 
-func req(method, url string, body ...io.Reader) *http.Request {
+func req(method, url string, body ...string) *http.Request {
 	var reqBody io.Reader
 	if body != nil {
-		reqBody = body[0]
+		reqBody = strings.NewReader(body[0])
 	}
 	r, _ := http.NewRequest(method, *server+url, reqBody)
 	return r
 }
 
-func httpRequest(t *testing.T, req *http.Request) []byte {
+func httpRequest(t *testing.T, req *http.Request) (resp *http.Response, respBody []byte) {
 	defer catchError(t)
 	client := &http.Client{}
-	resp, _ := client.Do(req)
+	resp, _ = client.Do(req)
 	defer resp.Body.Close()
-	respBody, _ := ioutil.ReadAll(resp.Body)
-	return respBody
+	respBody, _ = ioutil.ReadAll(resp.Body)
+	return resp, respBody
 }
 
-func testApi(t *testing.T, req *http.Request, expectedBody string) {
-	body := httpRequest(t, req)
+func testApi(t *testing.T, req *http.Request, expectedStatus int, expectedBody string) {
+	resp, body := httpRequest(t, req)
 	if string(body) != expectedBody {
 		t.Error(string(body))
 	}
+	if resp.StatusCode != expectedStatus {
+		t.Error(resp.StatusCode)
+	}
 }
 
-// TestHello tests "Hello World"
-func TestHello(t *testing.T) {
-	testApi(t, req("GET", ""), "Hello World\n")
+// TestCreateConnection
+func TestCreateConnection(t *testing.T) {
+	testApi(t, req("POST", "/connection", `{"recipient": "AuK0uiwbmDZHm1ziYhM4OQ=="}`),
+		200, "Ok")
+	invalidBody := []string{
+		`{"recipient": 1}`,
+		`{"recipient": "abc"}`,
+		`{"recipient": "AuK0uiwbmDZHm1ziYhM4OQ==", "unknown": "123"}`,
+		`1`, `"recipient"`, `[]`, `{}`, `false`, `null`}
+	for i := range invalidBody {
+		testApi(t, req("POST", "/connection", invalidBody[i]), 400, "Bad Request")
+	}
 }
 
 // TestRecipientApi tests recipient REST API
 func TestRecipientApi(t *testing.T) {
-	testApi(t, req("POST", "/connection"),
-		"createConnection not implemented\n")
 	testApi(t, req("PUT", "/connection/123"),
-		"secureConnection not implemented\n")
+		200, "secureConnection not implemented\n")
 	testApi(t, req("DELETE", "/connection/123"),
-		"deleteConnection not implemented\n")
+		200, "deleteConnection not implemented\n")
 	testApi(t, req("GET", "/connection/123/messages"),
-		"getMessages not implemented\n")
+		200, "getMessages not implemented\n")
 	testApi(t, req("GET", "/connection/123/messages/456"),
-		"getMessage not implemented\n")
+		200, "getMessage not implemented\n")
 	testApi(t, req("DELETE", "/connection/123/messages/456"),
-		"deleteMessage not implemented\n")
+		200, "deleteMessage not implemented\n")
 }
 
 // TestSenderApi tests sender REST API
 func TestSenderApi(t *testing.T) {
 	testApi(t, req("POST", "/connection/123/messages"),
-		"sendMessage not implemented\n")
+		200, "sendMessage not implemented\n")
 }

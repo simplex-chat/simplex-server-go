@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/simplex-chat/simplex-server/api"
+	"github.com/simplex-chat/simplex-server/db"
 )
 
 func getPort() (string, error) {
@@ -18,6 +19,8 @@ func getPort() (string, error) {
 }
 
 func main() {
+	db.Open()
+	defer db.Close()
 	addr, err := getPort()
 	if err != nil {
 		log.Fatal(err)
